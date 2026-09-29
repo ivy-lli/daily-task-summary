@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <body style="margin:0;background:#f4f6f7;font-family:Arial,sans-serif;color:#27313b">
+    <table role="presentation" style="width:100%;border-collapse:collapse">
+      <tr>
+        <td align="center" style="padding:24px 12px">
+          <table role="presentation" style="width:100%;max-width:640px;border-collapse:collapse;background:#fff">
+            <tr>
+              <td style="padding:28px 32px;border-bottom:1px solid #e2e5e9">
+                <img src="cid:daily-summary-logo" alt="Logo" style="max-width:160px;height:auto">
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px">
+                <h2 style="margin:0 0 16px;font-size:22px">Your open tasks</h2>
+                <p style="margin:0 0 20px;color:#59636e">You have {{TASK_COUNT}} open {{TASK_NOUN}}.</p>
+                <table role="presentation" style="width:100%;border-collapse:collapse">
+                  {{TASK_ROWS}}
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
