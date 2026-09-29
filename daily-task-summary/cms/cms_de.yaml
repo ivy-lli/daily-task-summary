@@ -1,0 +1,18 @@
+DailyTaskSummary:
+  subject: "Tägliche Aufgabenübersicht ({{TASK_COUNT}})"
+  heading: Ihre offenen Aufgaben
+  introOne: "Sie haben {{TASK_COUNT}} offene Aufgabe."
+  introMany: "Sie haben {{TASK_COUNT}} offene Aufgaben."
+  task: Aufgabe
+  priority: "Priorität:"
+  priorityEXCEPTION: Ausnahme
+  priorityHIGH: Hoch
+  priorityNORMAL: Normal
+  priorityLOW: Niedrig
+  created: "Erstellt am:"
+  expires: "Fällig am:"
+  start: Aufgabe starten
+  details: Aufgabendetails
+  plainHeading: "Ihre offenen Aufgaben:"
+  plainCreated: "Erstellt:"
+  plainExpires: "Fällig:"

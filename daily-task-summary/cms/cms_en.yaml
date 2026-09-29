@@ -1,0 +1,18 @@
+DailyTaskSummary:
+  subject: "Daily task summary ({{TASK_COUNT}})"
+  heading: Your open tasks
+  introOne: "You have {{TASK_COUNT}} open task."
+  introMany: "You have {{TASK_COUNT}} open tasks."
+  task: Task
+  priority: "Priority:"
+  priorityEXCEPTION: Exception
+  priorityHIGH: High
+  priorityNORMAL: Normal
+  priorityLOW: Low
+  created: "Date created:"
+  expires: "Expiry date:"
+  start: Start Task
+  details: Task Details
+  plainHeading: "Your open tasks:"
+  plainCreated: "Created:"
+  plainExpires: "Expires:"

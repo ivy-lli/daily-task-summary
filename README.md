@@ -11,7 +11,7 @@ The [`daily-task-summary/`](daily-task-summary/) project contains the timer proc
 1. Open or deploy `daily-task-summary` in Axon Ivy. Configure outgoing mail on the Axon Ivy runtime and give the intended users email addresses and tasks they can work on.
 2. Set `dailyTaskSummaryCron` in [`daily-task-summary/config/variables.yaml`](daily-task-summary/config/variables.yaml) as needed. The included value, `0 2 * * 1-5`, runs at 02:00 on weekdays in the runtime's time zone.
 
-For HTML mail, the sender loads its templates from [`daily-task-summary/src/com/axonivy/ivy/`](daily-task-summary/src/com/axonivy/ivy/) and embeds the branding mail logo served by the runtime.
+For HTML mail, the sender loads its templates from [`daily-task-summary/src/com/axonivy/ivy/`](daily-task-summary/src/com/axonivy/ivy/) and embeds the branding mail logo served by the runtime. Mail text is stored in the English and German files in [`daily-task-summary/cms/`](daily-task-summary/cms/) and selected using each recipient's Ivy user language. German users receive German mail; other users, including those without a language, receive English mail. Task names and descriptions remain as entered.
 
 ## Build
 

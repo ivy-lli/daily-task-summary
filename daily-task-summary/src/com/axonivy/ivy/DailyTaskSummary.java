@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +25,7 @@ import ch.ivyteam.ivy.workflow.task.TaskBusinessState;
 public class DailyTaskSummary {
 
   private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+  private static final DateTimeFormatter GERMAN_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
   private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{([A-Z_]+)\\}\\}");
 
   public static void send() {
@@ -37,9 +39,13 @@ public class DailyTaskSummary {
         TaskQuery query = TaskQuery.create()
             .where().businessState().isIn(TaskBusinessState.OPEN, TaskBusinessState.IN_PROGRESS)
             .and().canWorkOn(user);
+        Locale userLanguage = user.getLanguage();
+        Locale language = userLanguage != null && "de".equals(userLanguage.getLanguage())
+            ? Locale.GERMAN
+            : Locale.ENGLISH;
         String rowTemplate = loadTemplate("DailyTaskRow.html");
         StringBuilder tasks = new StringBuilder();
-        StringBuilder plainText = new StringBuilder("Your open tasks:\n\n");
+        StringBuilder plainText = new StringBuilder(cms(language, "plainHeading")).append("\n\n");
         String logoUrl = null;
         int count = 0;
         for (ITask task : query.executor().resultsPaged()) {
@@ -48,20 +54,28 @@ public class DailyTaskSummary {
             logoUrl = startUrl.substring(0, startUrl.indexOf("/pro/"))
                 + "/faces/jakarta.faces.resource/logo_mail.png?ln=xpertivy-branding";
           }
-          tasks.append(render(rowTemplate, Map.of(
-              "NAME", escape(task.getName()),
-              "ID", String.valueOf(task.getId()),
-              "PRIORITY", escape(String.valueOf(task.getPriority())),
-              "CREATED", formatDate(task.getStartTimestamp()),
-              "EXPIRY", formatDate(task.getExpiryTimestamp()),
-              "DESCRIPTION", escape(task.getDescription()),
-              "START_URL", escape(task.getStartLinkEmbedded().getAbsolute()),
-              "DETAIL_URL", escape(task.getDetailLink().getAbsolute()))));
+          tasks.append(render(rowTemplate, Map.ofEntries(
+              Map.entry("NAME", escape(task.getName())),
+              Map.entry("ID", String.valueOf(task.getId())),
+              Map.entry("PRIORITY", escape(cms(language, "priority" + task.getPriority().name()))),
+              Map.entry("CREATED", formatDate(task.getStartTimestamp(), language)),
+              Map.entry("EXPIRY", formatDate(task.getExpiryTimestamp(), language)),
+              Map.entry("DESCRIPTION", escape(task.getDescription())),
+              Map.entry("START_URL", escape(task.getStartLinkEmbedded().getAbsolute())),
+              Map.entry("DETAIL_URL", escape(task.getDetailLink().getAbsolute())),
+              Map.entry("TASK_LABEL", escape(cms(language, "task"))),
+              Map.entry("PRIORITY_LABEL", escape(cms(language, "priority"))),
+              Map.entry("CREATED_LABEL", escape(cms(language, "created"))),
+              Map.entry("EXPIRES_LABEL", escape(cms(language, "expires"))),
+              Map.entry("START_LABEL", escape(cms(language, "start"))),
+              Map.entry("DETAILS_LABEL", escape(cms(language, "details"))))));
           plainText.append(task.getName()).append(" (#").append(task.getId()).append(")\n")
-              .append("Created: ").append(formatDate(task.getStartTimestamp()))
-              .append(" | Expires: ").append(formatDate(task.getExpiryTimestamp())).append("\n")
-              .append("Start Task: ").append(task.getStartLinkEmbedded().getAbsolute()).append("\n")
-              .append("Task Details: ").append(task.getDetailLink().getAbsolute()).append("\n\n");
+              .append(cms(language, "plainCreated")).append(' ').append(formatDate(task.getStartTimestamp(), language))
+              .append(" | ").append(cms(language, "plainExpires")).append(' ')
+              .append(formatDate(task.getExpiryTimestamp(), language)).append("\n")
+              .append(cms(language, "start")).append(": ").append(task.getStartLinkEmbedded().getAbsolute())
+              .append("\n")
+              .append(cms(language, "details")).append(": ").append(task.getDetailLink().getAbsolute()).append("\n\n");
           count++;
         }
         if (count == 0) {
@@ -70,11 +84,15 @@ public class DailyTaskSummary {
 
         String body = render(loadTemplate("DailyTaskSummary.html"), Map.of(
             "TASK_COUNT", String.valueOf(count),
-            "TASK_NOUN", count == 1 ? "task" : "tasks",
+            "LANGUAGE", escape(language.getLanguage()),
+            "HEADING", escape(cms(language, "heading")),
+            "INTRO", escape(render(cms(language, count == 1 ? "introOne" : "introMany"),
+                Map.of("TASK_COUNT", String.valueOf(count)))),
             "TASK_ROWS", tasks.toString()));
         var message = MailMessage.create()
             .to(address)
-            .subject("Daily task summary (" + count + ")")
+            .subject(render(cms(language, "subject"),
+                Map.of("TASK_COUNT", String.valueOf(count))))
             .textContent(plainText.toString())
             .htmlContent(body);
         String brandingUrl = logoUrl;
@@ -107,6 +125,10 @@ public class DailyTaskSummary {
     }
   }
 
+  private static String cms(Locale language, String name) {
+    return Ivy.cms().coLocale("/DailyTaskSummary/" + name, language);
+  }
+
   private static String render(String template, Map<String, String> values) {
     return PLACEHOLDER.matcher(template).replaceAll(match -> {
       String value = values.get(match.group(1));
@@ -117,8 +139,9 @@ public class DailyTaskSummary {
     });
   }
 
-  private static String formatDate(Date date) {
-    return date == null ? "-" : DATE_FORMAT.format(date.toInstant().atZone(ZoneId.systemDefault()));
+  private static String formatDate(Date date, Locale language) {
+    DateTimeFormatter format = "de".equals(language.getLanguage()) ? GERMAN_DATE_FORMAT : DATE_FORMAT;
+    return date == null ? "-" : format.format(date.toInstant().atZone(ZoneId.systemDefault()));
   }
 
   private static String escape(String value) {

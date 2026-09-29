@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="{{LANGUAGE}}">
   <body style="margin:0;background:#f4f6f7;font-family:Arial,sans-serif;color:#27313b">
     <table role="presentation" style="width:100%;border-collapse:collapse">
       <tr>
@@ -12,8 +12,8 @@
             </tr>
             <tr>
               <td style="padding:24px 32px">
-                <h2 style="margin:0 0 16px;font-size:22px">Your open tasks</h2>
-                <p style="margin:0 0 20px;color:#59636e">You have {{TASK_COUNT}} open {{TASK_NOUN}}.</p>
+                <h2 style="margin:0 0 16px;font-size:22px">{{HEADING}}</h2>
+                <p style="margin:0 0 20px;color:#59636e">{{INTRO}}</p>
                 <table role="presentation" style="width:100%;border-collapse:collapse">
                   {{TASK_ROWS}}
                 </table>
