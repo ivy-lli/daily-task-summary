@@ -12,8 +12,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.util.ByteArrayDataSource;
+
 import ch.ivyteam.ivy.environment.Ivy;
-import ch.ivyteam.ivy.mail.MailAttachment;
+import ch.ivyteam.ivy.mail.Attachment;
 import ch.ivyteam.ivy.mail.MailClient;
 import ch.ivyteam.ivy.mail.MailMessage;
 import ch.ivyteam.ivy.security.IUser;
@@ -27,7 +29,7 @@ public class DailyTaskSummary {
   private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{([A-Z_]+)\\}\\}");
 
   public static void send() {
-    try (MailClient mail = MailClient.create()) {
+    try (MailClient mail = MailClient.newMailClient()) {
       for (IUser user : Ivy.security().users().paged()) {
         String address = user.getEMailAddress();
         if (address == null || address.isBlank()) {
@@ -39,14 +41,13 @@ public class DailyTaskSummary {
             .and().canWorkOn(user);
         String rowTemplate = loadTemplate("DailyTaskRow.html");
         StringBuilder tasks = new StringBuilder();
-        StringBuilder plainText = new StringBuilder("Your open tasks:\n\n");
         String logoUrl = null;
         int count = 0;
         for (ITask task : query.executor().resultsPaged()) {
           if (logoUrl == null) {
             String startUrl = task.getStartLink().getAbsolute();
             logoUrl = startUrl.substring(0, startUrl.indexOf("/pro/"))
-                + "/faces/jakarta.faces.resource/logo_mail.png?ln=xpertivy-branding";
+                + "/faces/javax.faces.resource/logo_mail.png?ln=xpertivy-branding";
           }
           tasks.append(render(rowTemplate, Map.of(
               "NAME", escape(task.getName()),
@@ -57,11 +58,6 @@ public class DailyTaskSummary {
               "DESCRIPTION", escape(task.getDescription()),
               "START_URL", escape(task.getStartLinkEmbedded().getAbsolute()),
               "DETAIL_URL", escape(task.getDetailLink().getAbsolute()))));
-          plainText.append(task.getName()).append(" (#").append(task.getId()).append(")\n")
-              .append("Created: ").append(formatDate(task.getStartTimestamp()))
-              .append(" | Expires: ").append(formatDate(task.getExpiryTimestamp())).append("\n")
-              .append("Start Task: ").append(task.getStartLinkEmbedded().getAbsolute()).append("\n")
-              .append("Task Details: ").append(task.getDetailLink().getAbsolute()).append("\n\n");
           count++;
         }
         if (count == 0) {
@@ -75,20 +71,15 @@ public class DailyTaskSummary {
         var message = MailMessage.create()
             .to(address)
             .subject("Daily task summary (" + count + ")")
-            .textContent(plainText.toString())
             .htmlContent(body);
-        String brandingUrl = logoUrl;
-        message.attachments(MailAttachment.create()
-            .inputStream(() -> {
-              try {
-                return URI.create(brandingUrl).toURL().openStream();
-              } catch (IOException exception) {
-                throw new UncheckedIOException(exception);
-              }
-            }, "image/png")
-            .fileName("logo_mail.png")
-            .inline("daily-summary-logo")
-            .toMailAttachment());
+        try (InputStream logo = URI.create(logoUrl).toURL().openStream()) {
+          message.attachments(Attachment.create()
+              .dataSource(new ByteArrayDataSource(logo, "image/png"))
+              .filename("logo_mail.png")
+              .dispositionInline()
+              .contentId("daily-summary-logo")
+              .toAttachment());
+        }
         mail.send(message.toMailMessage());
       }
     } catch (Exception exception) {
