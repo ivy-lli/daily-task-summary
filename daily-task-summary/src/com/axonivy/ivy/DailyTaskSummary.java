@@ -55,12 +55,12 @@ public class DailyTaskSummary {
               "CREATED", formatDate(task.getStartTimestamp()),
               "EXPIRY", formatDate(task.getExpiryTimestamp()),
               "DESCRIPTION", escape(task.getDescription()),
-              "START_URL", escape(task.getStartLink().getAbsolute()),
+              "START_URL", escape(task.getStartLinkEmbedded().getAbsolute()),
               "DETAIL_URL", escape(task.getDetailLink().getAbsolute()))));
           plainText.append(task.getName()).append(" (#").append(task.getId()).append(")\n")
               .append("Created: ").append(formatDate(task.getStartTimestamp()))
               .append(" | Expires: ").append(formatDate(task.getExpiryTimestamp())).append("\n")
-              .append("Start Task: ").append(task.getStartLink().getAbsolute()).append("\n")
+              .append("Start Task: ").append(task.getStartLinkEmbedded().getAbsolute()).append("\n")
               .append("Task Details: ").append(task.getDetailLink().getAbsolute()).append("\n\n");
           count++;
         }
