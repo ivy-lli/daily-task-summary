@@ -2,6 +2,8 @@
 
 An Axon Ivy project that emails each user a summary of the open and in-progress tasks they can work on. Messages include HTML and plain-text content with links to each task. Users without an email address or matching tasks are skipped.
 
+![alt text](doc/DailyTaskSummaryMail.png)
+
 The [`daily-task-summary/`](daily-task-summary/) project contains the timer process, mail sender, templates, and configuration.
 
 ## Setup and Run
