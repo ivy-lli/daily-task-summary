@@ -2,7 +2,7 @@
   "$schema" : "https://json-schema.axonivy.com/14.0/project/process.json",
   "id" : "1A0ECFB372029AEB",
   "config" : {
-    "data" : "com.axonivy.ivy.BusinessProcessData"
+    "data" : "com.axonivy.ivy.DailyTaskSummaryData"
   },
   "elements" : [ {
       "id" : "f0",
